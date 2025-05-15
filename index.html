@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>五角星跳转场景</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<style>
+html, body {
+    margin: 0;
+    height: 100%;
+    background: black;
+}
+#panorama {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+}
+
+/* 五角星按钮 */
+.star-button {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 80px;
+    height: 80px;
+    background: gold;
+    clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%,
+        79% 91%, 50% 70%, 21% 91%, 32% 57%,
+        2% 35%, 39% 35%
+    );
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 1s ease;
+}
+
+/* 旋转动画 */
+.rotate {
+    animation: spin 1s ease;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 打字文字提示 */
+#message {
+    position: absolute;
+    top: 120px;
+    left: 30px;
+    color: white;
+    font-size: 16px;
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 10px;
+    border-radius: 6px;
+    z-index: 10;
+    display: none;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 2px solid white;
+    animation: typing 2s steps(20, end), blink 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 220px }
+}
+
+@keyframes blink {
+    from, to { border-color: transparent }
+    50% { border-color: white }
+}
+</style>
+</head>
+<body>
+<div id="panorama"></div>
+
+<!-- 五角星按钮 -->
+<div class="star-button" id="starBtn"></div>
+
+<!-- 提示文字 -->
+<div id="message">欢迎进入下一个场景</div>
+
+<!-- 旋转音效 -->
+<audio id="rotateSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_d1c091f94a.mp3?filename=whoosh-6315.mp3"></audio>
+
+<script>
+// 初始化全景
+const viewer = pannellum.viewer('panorama', {
+    "default": {
+        "firstScene": "scene1",
+        "sceneFadeDuration": 1000
+    },
+    "scenes": {
+        "scene1": {
+            "title": "房间A",
+            "type": "equirectangular",
+            "panorama": "scene1.jpg",
+            "autoLoad": true
+        },
+        "scene2": {
+            "title": "房间B",
+            "type": "equirectangular",
+            "panorama": "scene2.jpg",
+            "autoLoad": true
+        }
+    }
+});
+
+// 获取元素
+const star = document.getElementById("starBtn");
+const message = document.getElementById("message");
+const sound = document.getElementById("rotateSound");
+
+// 绑定点击事件
+star.addEventListener("click", () => {
+    // 播放旋转音效
+    sound.currentTime = 0;
+    sound.play();
+
+    // 添加旋转动画
+    star.classList.add("rotate");
+
+    // 显示打字文字
+    message.style.display = "block";
+    message.style.animation = "typing 2s steps(20, end), blink 0.75s step-end infinite";
+
+    // 跳转场景
+    setTimeout(() => {
+        const current = viewer.getScene();
+        const next = current === "scene1" ? "scene2" : "scene1";
+        viewer.loadScene(next);
+
+        // 清理动画和提示
+        star.classList.remove("rotate");
+        message.style.display = "none";
+    }, 1000);
+});
+</script>
+</body>
+</html>
